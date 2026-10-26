@@ -54,7 +54,7 @@ describe("mantenimiento organizacional", () => {
     await localRepository.put("sales", { id: "seller-sale", saleNumber: "SEL-1", customerId: "customer-1", sellerId: "seller-1", branchId: "branch-1", lines: [], subtotal: 15, total: 15, state: "confirmed", saleDate: new Date().toISOString(), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), status: "active", demo: true });
     expect(await organizationService.deleteSeller("Administrador", "seller-1")).toBe("deactivated");
     expect((await localRepository.get("sellers", "seller-1"))?.status).toBe("inactive");
-    expect(await organizationService.listBranches("Cajero")).toHaveLength(1);
+    expect(await organizationService.listBranches("Cajero")).toHaveLength(4);
     await expect(organizationService.saveBranch("Vendedor", { code: "NO", name: "Sin permiso" })).rejects.toThrow(/permiso/);
     await expect(organizationService.listSellers("Analista")).rejects.toThrow(/permiso/);
   });

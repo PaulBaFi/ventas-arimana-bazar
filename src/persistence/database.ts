@@ -2,8 +2,21 @@ import { DEMO_DATA } from "@/data/demo";
 import type { AuditLog, Company, ConsolidatedRow, Customer, EntityByStore, EtlExecution, EtlConnection, Person, Receipt, Sale, StoreName } from "@/domain/models";
 
 const DB_NAME = "arimana-bazar-demo";
-const DB_VERSION = 3;
+const DB_VERSION = 4;
 const STORES: StoreName[] = ["users", "customers", "persons", "companies", "categories", "products", "branches", "sellers", "paymentMethods", "sales", "receipts", "departments", "provinces", "districts", "etlConnections", "etlExecutions", "auditLogs", "consolidatedRows"];
+const REFERENCE_STORES: StoreName[] = ["users", "customers", "persons", "companies", "categories", "products", "branches", "sellers", "paymentMethods", "departments", "provinces", "districts"];
+
+function isLegacySeed(store: StoreName, record: Record<string, unknown>): boolean {
+  if (store === "users") return record.username === "admin.demo" || record.username === "vendedor.demo" || record.username === "analista.demo" || record.displayName === "Administración General" || record.displayName === "Analista Comercial";
+  if (store === "persons") return record.id === "person-customer-1" && (record.firstName === "Cliente" || record.lastName === "Frecuente" || record.lastName === "Demostración");
+  if (store === "companies") return record.id === "company-customer-2" && (record.legalName === "Empresa Demo SAC" || record.legalName === "Comercial Andina SAC");
+  if (store === "categories") return record.id === "category-1" && (record.description === "Categoría de demostración" || record.name === "Accesorios");
+  if (store === "products") return record.id === "product-1" && (record.code === "DEM-001" || record.name === "Bolso urbano");
+  if (store === "branches") return record.id === "branch-1" && (record.name === "Sucursal Demostración" || record.name === "Sucursal Central");
+  if (store === "sellers") return record.id === "seller-1" && (record.name === "Vendedora Demo" || record.name === "María Fernanda Torres");
+  if (store === "paymentMethods") return record.id === "payment-cash" || record.id === "payment-card" || (typeof record.description === "string" && (record.description.includes("simulado") || record.description.includes("simulada")));
+  return false;
+}
 
 function openDatabase(): Promise<IDBDatabase> {
   if (typeof indexedDB === "undefined") return Promise.reject(new Error("IndexedDB no está disponible en este entorno."));
@@ -67,6 +80,8 @@ function openDatabase(): Promise<IDBDatabase> {
         migrate("paymentMethods", "payment-cash", record => record.description === "Medio de pago simulado" ? { ...record, description: "Pago en efectivo" } : record);
         migrate("paymentMethods", "payment-card", record => record.description === "Medio de pago simulado" ? { ...record, description: "Pago con tarjeta" } : record);
       }
+      // Version 4 reserves the migration boundary for the expanded commercial seed.
+      // Existing user data is reconciled safely by seedDemoData after the schema opens.
     };
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error ?? new Error("No se pudo abrir la base local."));
@@ -291,10 +306,25 @@ export const localRepository = {
       const tx = db.transaction(STORES, "readwrite");
       for (const store of STORES) {
         const objectStore = tx.objectStore(store);
-        const count = objectStore.count();
-        count.onsuccess = () => {
-          if (count.result !== 0) return;
-          for (const item of DEMO_DATA[store] as EntityByStore[typeof store][]) objectStore.put(item);
+        const records = objectStore.getAll();
+        records.onsuccess = () => {
+          const existing = records.result as EntityByStore[typeof store][];
+          const existingIds = new Set(existing.map(item => item.id));
+          const seedRecords = DEMO_DATA[store] as EntityByStore[typeof store][];
+          if (existing.length === 0) {
+            for (const item of seedRecords) objectStore.put(item);
+            return;
+          }
+          // Replace only recognizable records from the former seed. User-created
+          // records and historical operations are never removed or overwritten.
+          for (const record of existing) {
+            if (!isLegacySeed(store, record as unknown as Record<string, unknown>)) continue;
+            const replacement = seedRecords.find(item => item.id === record.id);
+            if (replacement) objectStore.put(replacement);
+          }
+          // Reference data can be expanded without touching user records. Sales,
+          // receipts and ETL history are seeded only when their stores are empty.
+          if (REFERENCE_STORES.includes(store)) for (const item of seedRecords) if (!existingIds.has(item.id)) objectStore.put(item);
         };
       }
       await new Promise<void>((resolve, reject) => {

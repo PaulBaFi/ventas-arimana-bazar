@@ -5,8 +5,12 @@ export interface MockConnectionResponse { valid: boolean; message: string; check
 export interface MockEtlResponse { metrics: EtlSourceMetric[]; rows: ConsolidatedRow[]; logs: string[]; events: EtlLogEvent[]; errors: EtlStageError[]; validation: EtlLoadValidation }
 export type MockProgressHandler = (event: EtlLogEvent) => void | Promise<void>;
 
-const sourceIndex = (source: EtlSourceName) => ["siga_1646", "SamarImportadora", "DW_SamarImportadora", "CASTILLONV2", "BD_CASTILLON_VETERINARIA", "ARIMANA_OLTP"].indexOf(source);
 const base = (id: string, now: string) => ({ id, createdAt: now, updatedAt: now, status: "active" as const, demo: true as const });
+const products = ["Polera urbana", "Zapatilla deportiva", "Sandalia clásica", "Mochila acolchada", "Peluche artesanal", "Cartera esencial", "Gorra deportiva", "Organizador compacto"];
+const categories = ["Ropa", "Calzado", "Sandalias", "Mochilas", "Peluches", "Carteras", "Gorras", "Hogar"];
+const sellers = ["María Fernanda Torres", "Carlos Ramírez Huamán", "Jimena Valdivia Soto", "Luis Alberto Cárdenas", "Ana Lucía Paredes", "Jorge Salinas Flores"];
+const branches = ["Arimana Centro", "Arimana Miraflores", "Arimana Arequipa", "Arimana Trujillo"];
+const locations = [["Lima", "Lima", "Miraflores"], ["Lima", "Lima", "San Isidro"], ["Arequipa", "Arequipa", "Cayma"], ["La Libertad", "Trujillo", "Trujillo"]];
 
 /** REST/OpenAPI-compatible boundary. It never opens a socket and never returns credentials. */
 export const mockEtlApi = {
@@ -30,15 +34,17 @@ export const mockEtlApi = {
     await emit({ timestamp: now, level: "info", message: `Inicio de extracción para ${selected.length} fuente(s).` });
     const metrics: EtlSourceMetric[] = [];
     for (const [position, source] of selected.entries()) {
-      const extracted = 4 + (sourceIndex(source) % 3);
+    const extracted = source === "siga_1646" ? 36 : 42;
       const transformed = extracted;
       const isDwDuplicate = source === "DW_SamarImportadora" && selected.includes("SamarImportadora");
       const loaded = isDwDuplicate ? 0 : extracted;
       for (let index = 1; index <= extracted; index += 1) {
         const duplicate = (source === "DW_SamarImportadora" && selected.includes("SamarImportadora"));
         if (duplicate) continue;
-        const isB2g = source === "siga_1646" && index === 1;
-        rows.push({ ...base(`etl-${now}-${source}-${index}`, now), source, sourceKey: `${source}-${index}`, transactionKey: `${source}-transaction-${index}`, dimension: isB2g ? "Orden SIGA B2G" : "Venta consolidada", amount: (position + 1) * index * 10, date: now.slice(0, 10), businessType: isB2g ? "b2g-order" : "sale", origin: source, productName: `Producto ${((index - 1) % 3) + 1}`, categoryName: index % 2 ? "Accesorios" : "Hogar", companyName: index % 2 ? "Comercial Andina SAC" : "Empresa Central SAC", sellerName: index % 2 ? "María Fernanda Torres" : "Carlos Ramírez", branchName: index % 2 ? "Sucursal Central" : "Sucursal Norte", departmentName: "Lima", provinceName: "Lima", districtName: index % 2 ? "Miraflores" : "San Isidro" });
+      const isB2g = source === "siga_1646" && index <= 3;
+      const period = new Date(Date.UTC(2026, 9 - ((index + position) % 12), 1 + ((index * 3) % 25)));
+      const location = locations[(index + position) % locations.length];
+      rows.push({ ...base(`etl-${now}-${source}-${index}`, now), source, sourceKey: `${source}-${index}`, transactionKey: source === "SamarImportadora" || source === "DW_SamarImportadora" ? `venta-integrada-${index}` : `${source}-transaction-${index}`, dimension: isB2g ? "Orden SIGA B2G" : "Venta consolidada", amount: 18 + ((index * 17 + position * 23) % 280), date: period.toISOString().slice(0, 10), businessType: isB2g ? "b2g-order" : "sale", origin: source, productName: products[(index + position) % products.length], categoryName: categories[(index + position) % categories.length], companyName: index % 3 ? "Comercial Andina SAC" : "Corporación La Alameda EIRL", sellerName: sellers[(index + position) % sellers.length], branchName: branches[(index + position) % branches.length], departmentName: location[0], provinceName: location[1], districtName: location[2] });
       }
       logs.push(`[extract] ${source}: ${extracted} registros extraídos.`);
       logs.push(`[transform] ${source}: ${transformed} registros transformados.`);

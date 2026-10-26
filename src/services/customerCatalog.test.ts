@@ -33,13 +33,14 @@ describe("clientes, relaciones e historial", () => {
   });
   it("desactiva clientes con ventas y permite consultar su historial", async () => {
     await localRepository.seedDemoData();
+    const existingSales = (await localRepository.list("sales")).filter(item => item.customerId === "customer-1").length;
     const sale: Sale = { id: "sale-client-test", saleNumber: "TEST-1", customerId: "customer-1", sellerId: "seller-1", branchId: "branch-1", lines: [], subtotal: 10, total: 10, state: "confirmed", saleDate: new Date().toISOString(), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), status: "active", demo: true };
     await localRepository.put("sales", sale);
     expect((await customerService.salesHistory("Vendedor", "customer-1")).map(item => item.id)).toContain(sale.id);
     expect(await customerService.delete("Administrador", "customer-1")).toBe("deactivated");
     expect((await customerService.get("Administrador", "customer-1")).status).toBe("inactive");
     expect(await localRepository.get("persons", "person-customer-1")).toBeDefined();
-    expect((await customerService.salesHistory("Vendedor", "customer-1"))).toHaveLength(1);
+    expect((await customerService.salesHistory("Vendedor", "customer-1"))).toHaveLength(existingSales + 1);
   });
 });
 

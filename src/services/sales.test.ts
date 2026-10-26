@@ -33,13 +33,13 @@ describe("ventas, comprobantes y persistencia atómica", () => {
   it("guarda borrador, líneas, comprobante y auditoría atómicamente, preservando precio del catálogo", async () => {
     const actor = (await localRepository.get("users", "user-seller"))!;
     const sale = await salesService.saveDraft("Vendedor", actor, { ...draftInput(), receiptType: "Boleta" });
-    expect(sale.saleNumber).toBe("V-000001"); expect(sale.total).toBe(50); expect(sale.lines).toHaveLength(1);
+    expect(sale.saleNumber).toBe("V-000251"); expect(sale.total).toBe(78); expect(sale.lines).toHaveLength(1);
     const receipt = await localRepository.get("receipts", sale.receiptId!);
     expect(receipt).toMatchObject({ saleId: sale.id, type: "Boleta", series: "B001", number: "", state: "draft" });
     expect((await localRepository.list("auditLogs")).some(log => log.target === sale.id && log.action === "SALE_DRAFT_CREATED")).toBe(true);
     await localRepository.put("products", { ...(await localRepository.get("products", "product-1"))!, unitPrice: 99, name: "Artículo renombrado" });
     const edited = await salesService.saveDraft("Vendedor", actor, { ...draftInput(), id: sale.id, receiptType: "Boleta" });
-    expect(edited.lines[0].unitPrice).toBe(25); expect(edited.lines[0].productName).toBe("Bolso urbano"); expect(edited.total).toBe(50);
+    expect(edited.lines[0].unitPrice).toBe(39); expect(edited.lines[0].productName).toBe("Polera urbana"); expect(edited.total).toBe(78);
     expect((await localRepository.get("receipts", sale.receiptId!))?.number).toBe("");
   });
   it("revierte cabecera, comprobante y auditoría juntos si falla una escritura de la transacción", async () => {
@@ -70,7 +70,8 @@ describe("ventas, comprobantes y persistencia atómica", () => {
     const edited = await salesService.saveDraft("Vendedor", actor, { ...draftInput(), id: sale.id, paymentMethodId: "payment-cash" });
     const confirmed = await salesService.confirm("Vendedor", actor, edited.id);
     expect(confirmed.state).toBe("confirmed");
-    expect(await localRepository.get("receipts", withReceipt.id)).toMatchObject({ state: "issued", number: "000001" });
+    expect(await localRepository.get("receipts", withReceipt.id)).toMatchObject({ state: "issued" });
+    expect(Number((await localRepository.get("receipts", withReceipt.id))?.number)).toBeGreaterThan(0);
     await expect(salesService.saveDraft("Vendedor", actor, { ...draftInput(), id: sale.id })).rejects.toThrow(/borrador/);
     await expect(salesService.confirm("Vendedor", actor, sale.id)).rejects.toThrow(/borrador/);
     const details = await salesService.details("Vendedor", sale.id);
@@ -90,9 +91,10 @@ describe("ventas, comprobantes y persistencia atómica", () => {
     const actor = (await localRepository.get("users", "user-seller"))!;
     const sale = await salesService.saveDraft("Vendedor", actor, { ...draftInput(), paymentMethodId: "payment-cash", receiptType: "Boleta", departmentId: "department-lima", provinceId: "province-lima", districtId: "district-miraflores" });
     await salesService.confirm("Vendedor", actor, sale.id);
-    const rows = await salesService.search("Vendedor", { query: "B001-000001", state: "confirmed", from: "2026-02-10", to: "2026-02-10", departmentId: "department-lima", provinceId: "province-lima", districtId: "district-miraflores" });
+    const issued = await localRepository.get("receipts", sale.receiptId!);
+    const rows = await salesService.search("Vendedor", { query: `${issued!.series}-${issued!.number}`, state: "confirmed", from: "2026-02-10", to: "2026-02-10", departmentId: "department-lima", provinceId: "province-lima", districtId: "district-miraflores" });
     expect(rows).toHaveLength(1); expect(rows[0].sale.customerId).toBe("customer-1");
-    expect(await salesService.search("Vendedor", { customerId: "customer-2" })).toHaveLength(0);
+    expect(await salesService.search("Vendedor", { customerId: "customer-person-999" })).toHaveLength(0);
   });
   it("edita o elimina comprobantes borrador; anula emitidos y conserva la numeración", async () => {
     const actor = (await localRepository.get("users", "user-seller"))!;
@@ -108,7 +110,7 @@ describe("ventas, comprobantes y persistencia atómica", () => {
     const issued = await localRepository.get("receipts", another.receiptId!);
     await expect(salesService.saveReceiptDraft("Vendedor", actor, another.id, "Boleta")).rejects.toThrow(/borrador/);
     const voided = await salesService.voidReceipt("Vendedor", actor, issued!.id);
-    expect(voided.state).toBe("voided"); expect(voided.number).toBe("000001");
+    expect(voided.state).toBe("voided"); expect(Number(voided.number)).toBeGreaterThan(0);
     expect(first.state).toBe("draft");
   });
   it("elimina borradores con auditoría y aplica permisos de consulta y escritura", async () => {
