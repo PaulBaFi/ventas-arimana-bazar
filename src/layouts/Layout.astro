@@ -1,5 +1,9 @@
 ---
 import "@/styles/global.css";
+interface Props {
+  title?: string;
+}
+const { title = "Arimana Bazar · Gestión de ventas" } = Astro.props;
 ---
 
 <!doctype html>
@@ -7,10 +11,14 @@ import "@/styles/global.css";
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" href="/LOGO_APP.png" />
+    <link rel="apple-touch-icon" href="/LOGO_APP.png" />
 
-    <title>Astro Basics</title>
+    <meta
+      name="description"
+      content="Maqueta académica de gestión de ventas de Arimana Bazar."
+    />
+    <title>{title}</title>
 
     <link
       rel="preload"

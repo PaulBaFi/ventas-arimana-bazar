@@ -15,6 +15,7 @@ export interface User extends BaseEntity {
   displayName: string;
   role: UserRole;
   employeeId?: string;
+  email?: string;
 }
 
 export interface Customer extends BaseEntity {

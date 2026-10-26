@@ -1,4 +1,5 @@
 import type { Customer, SaleLine } from "./models";
+import type { UserRole } from "./models";
 
 export type ValidationErrors<T extends string = string> = Partial<Record<T, string>>;
 export const required = (value: unknown, label: string): string | undefined => String(value ?? "").trim() ? undefined : `${label} es obligatorio.`;
@@ -21,4 +22,15 @@ export function validateSaleLines(lines: SaleLine[]): string[] {
     ...(Number.isInteger(line.quantity) && line.quantity > 0 ? [] : [`Línea ${i + 1}: cantidad debe ser un entero mayor a cero.`]),
     ...(Number.isFinite(line.unitPrice) && line.unitPrice >= 0 ? [] : [`Línea ${i + 1}: precio inválido.`]),
   ]);
+}
+
+export interface UserInput { username: string; displayName: string; role: UserRole; email?: string }
+export function validateUser(input: UserInput): ValidationErrors<"username" | "displayName" | "role" | "email"> {
+  const errors: ValidationErrors<"username" | "displayName" | "role" | "email"> = {};
+  if (required(input.username, "Usuario")) errors.username = "El usuario es obligatorio.";
+  else if (!/^[a-zA-Z0-9._-]{3,32}$/.test(input.username)) errors.username = "Usa entre 3 y 32 caracteres: letras, números, punto, guion o guion bajo.";
+  if (required(input.displayName, "Nombre")) errors.displayName = "El nombre es obligatorio.";
+  if (!input.role) errors.role = "Selecciona un rol.";
+  if (input.email && !validEmail(input.email)) errors.email = "Ingresa un correo válido.";
+  return errors;
 }
