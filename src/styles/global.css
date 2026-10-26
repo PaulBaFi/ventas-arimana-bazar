@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "Nunito Sans";
+  src: url("/fonts/NunitoSans.ttf") format("truetype");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --color-primary: #0fc2bf;
+  --color-primary-hover: #0daea7;
+  --color-primary-active: #0b9690;
+  --color-primary-subtle: #e6f9f9; /* Para estados active/hover en menus o badges */
+
+  --color-surface-page: #f8fafc; /* Fondo general de la aplicación */
+  --color-surface-card: #ffffff; /* Tarjetas, modales, tablas y contenedores */
+  --color-surface-sidebar: #0f172a; /* Sidebar oscuro/formal (Slate 900) */
+  --color-surface-hover: #f1f5f9; /* Hover en filas de tablas, items de lista */
+  --color-surface-active: #e2e8f0; /* Selección de elementos */
+
+  --color-text-primary: #0f172a; /* Títulos, datos importantes (alto contraste) */
+  --color-text-secondary: #475569; /* Textos secundarios, descripciones, labels */
+  --color-text-muted: #94a3b8; /* Placeholders, iconos desactivados, timestamps */
+  --color-text-inverse: #ffffff; /* Texto sobre botón primario o sidebar oscuro */
+
+  --color-border-subtle: #f1f5f9; /* Separadores suaves, divisiones menores */
+  --color-border-default: #e2e8f0; /* Bordes de tarjetas, tablas, inputs estándar */
+  --color-border-strong: #cbd5e1; /* Input focus/active, bordes marcados */
+  --color-border-primary: #0fc2bf; /* Bordes activos/seleccionados con la marca */
+
+  --color-success: #10b981;
+  --color-success-subtle: #ecfdf5;
+
+  --color-warning: #f59e0b;
+  --color-warning-subtle: #fffbeb;
+
+  --color-danger: #ef4444;
+  --color-danger-subtle: #fef2f2;
+
+  --color-info: #3b82f6;
+  --color-info-subtle: #eff6ff;
+
+  --font-sans: "Nunito Sans", system-ui, -apple-system, sans-serif;
+
+  --shadow-sm: 0 1px 2px 0 rgb(15 23 42 / 0.05);
+  --shadow-card:
+    0 1px 3px 0 rgb(15 23 42 / 0.08), 0 1px 2px -1px rgb(15 23 42 / 0.08);
+  --shadow-dropdown:
+    0 10px 15px -3px rgb(15 23 42 / 0.1), 0 4px 6px -4px rgb(15 23 42 / 0.05);
+  --shadow-modal:
+    0 20px 25px -5px rgb(15 23 42 / 0.12), 0 8px 10px -6px rgb(15 23 42 / 0.08);
+}
+
+@layer base {
+  body {
+    @apply font-sans bg-surface-page text-text-primary antialiased;
+  }
+}
