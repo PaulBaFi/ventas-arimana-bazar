@@ -1,5 +1,5 @@
 import { DEMO_DATA } from "@/data/demo";
-import type { AuditLog, Company, Customer, EntityByStore, Person, Receipt, Sale, StoreName } from "@/domain/models";
+import type { AuditLog, Company, ConsolidatedRow, Customer, EntityByStore, EtlExecution, EtlConnection, Person, Receipt, Sale, StoreName } from "@/domain/models";
 
 const DB_NAME = "arimana-bazar-demo";
 const DB_VERSION = 3;
@@ -231,6 +231,57 @@ export const localRepository = {
         tx.oncomplete = () => resolve();
         tx.onerror = () => reject(tx.error ?? new Error("No se pudo eliminar el borrador."));
         tx.onabort = () => reject(tx.error ?? new Error("La operación fue cancelada."));
+      });
+    } finally { db.close(); }
+  },
+  async saveEtlExecution(execution: EtlExecution, rows: ConsolidatedRow[], audit: AuditLog): Promise<void> {
+    const db = await openDatabase();
+    try {
+      const tx = db.transaction(["etlExecutions", "consolidatedRows", "auditLogs"], "readwrite");
+      tx.objectStore("etlExecutions").put(execution);
+      const rowsStore = tx.objectStore("consolidatedRows");
+      const existingRows = rowsStore.getAll();
+      existingRows.onsuccess = () => {
+        const keys = new Set(rows.map(row => row.sourceKey));
+        for (const existing of existingRows.result as ConsolidatedRow[]) if (keys.has(existing.sourceKey)) rowsStore.delete(existing.id);
+        for (const row of rows) rowsStore.put(row);
+        tx.objectStore("auditLogs").put(audit);
+      };
+      await new Promise<void>((resolve, reject) => {
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error ?? new Error("No se pudo guardar la ejecución ETL."));
+        tx.onabort = () => reject(tx.error ?? new Error("La ejecución ETL fue cancelada."));
+      });
+    } finally { db.close(); }
+  },
+  async clearConsolidated(audit: AuditLog): Promise<number> {
+    const db = await openDatabase();
+    try {
+      const tx = db.transaction(["consolidatedRows", "auditLogs"], "readwrite");
+      const rows = tx.objectStore("consolidatedRows");
+      const count = rows.count();
+      let countValue = 0;
+      count.onsuccess = () => { countValue = count.result; };
+      rows.clear();
+      tx.objectStore("auditLogs").put(audit);
+      await new Promise<void>((resolve, reject) => {
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error ?? new Error("No se pudo limpiar el consolidado."));
+        tx.onabort = () => reject(tx.error ?? new Error("La limpieza fue cancelada."));
+      });
+      return countValue;
+    } finally { db.close(); }
+  },
+  async saveEtlConnection(connection: EtlConnection, audit: AuditLog): Promise<void> {
+    const db = await openDatabase();
+    try {
+      const tx = db.transaction(["etlConnections", "auditLogs"], "readwrite");
+      tx.objectStore("etlConnections").put(connection);
+      tx.objectStore("auditLogs").put(audit);
+      await new Promise<void>((resolve, reject) => {
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error ?? new Error("No se pudo guardar la conexión ETL."));
+        tx.onabort = () => reject(tx.error ?? new Error("La conexión ETL fue cancelada."));
       });
     } finally { db.close(); }
   },

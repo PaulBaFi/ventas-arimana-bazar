@@ -45,18 +45,26 @@ export interface District extends BaseEntity { code: string; name: string; provi
 
 export const ETL_SOURCE_NAMES = [
   "siga_1646", "SamarImportadora", "DW_SamarImportadora", "CASTILLONV2",
-  "BD_CASTILLON_VETERINARIA", "Arimana Bazar OLTP",
+  "BD_CASTILLON_VETERINARIA", "ARIMANA_OLTP",
 ] as const;
 export type EtlSourceName = typeof ETL_SOURCE_NAMES[number];
 export interface EtlConnection extends BaseEntity {
   name: EtlSourceName; server: string; engine: string; database: string; username: string;
-  /** Nunca se persiste una contraseña auténtica. En demostración solo se guarda un marcador ficticio. */
+  /** Nunca se persiste una contraseña auténtica; solo se conserva el indicador de configuración. */
   credentialConfigured: boolean;
 }
 export type StoreName = "users" | "customers" | "persons" | "companies" | "categories" | "products" | "branches" | "sellers" | "paymentMethods" | "sales" | "receipts" | "departments" | "provinces" | "districts" | "etlConnections" | "etlExecutions" | "auditLogs" | "consolidatedRows";
 export interface AuditLog extends BaseEntity { actorId: string; action: string; target: string; result: "success" | "error"; message: string }
-export interface EtlExecution extends BaseEntity { sourceNames: EtlSourceName[]; state: "pending" | "running" | "completed" | "error"; startedAt: string; durationSeconds: number; log: string[]; extracted: number; transformed: number; loaded: number; rejected: number }
-export interface ConsolidatedRow extends BaseEntity { source: EtlSourceName; sourceKey: string; dimension: string; amount: number; date: string }
+export interface EtlSourceMetric { source: EtlSourceName; extracted: number; transformed: number; loaded: number; rejected: number; durationSeconds: number; integrityPassed: boolean }
+export interface EtlStageError { source: EtlSourceName; stage: "extract" | "transform" | "load" | "validate"; message: string }
+export interface EtlLoadValidation { totalRows: number; uniqueSourceKeys: number; orphanRows: number; passed: boolean; checkedAt: string }
+export interface EtlLogEvent { id: string; timestamp: string; level: "info" | "warning" | "error"; source?: EtlSourceName; stage?: "extract" | "transform" | "load" | "validate"; message: string }
+export interface EtlExecution { id: string; sourceNames: EtlSourceName[]; state: "pending" | "running" | "completed" | "error"; startedAt: string; completedAt?: string; durationSeconds: number; log: string[]; logEvents?: EtlLogEvent[]; extracted: number; transformed: number; loaded: number; rejected: number; sourceMetrics: EtlSourceMetric[]; errors: EtlStageError[]; validation?: EtlLoadValidation; createdAt: string; updatedAt: string; status: EntityStatus; demo: true }
+export interface ConsolidatedRow extends BaseEntity {
+  source: EtlSourceName; sourceKey: string; dimension: string; amount: number; date: string; businessType: "sale" | "b2g-order"; origin: string; duplicateOf?: string;
+  transactionKey?: string; productName?: string; categoryName?: string; companyName?: string; sellerName?: string; branchName?: string;
+  departmentName?: string; provinceName?: string; districtName?: string;
+}
 
 export type EntityByStore = {
   users: User; customers: Customer; persons: Person; companies: Company; categories: Category; products: Product; branches: Branch;
