@@ -1,12 +1,12 @@
 import { AdminShell } from "@/components/layout/AdminShell";
 import { OrganizationPage } from "./OrganizationPage";
-export function OrganizationApplication() {
+export function OrganizationApplication({ initialTab = "branches" }: { initialTab?: "branches" | "sellers" }) {
   return (
     <AdminShell
-      title="Vendedores y sucursales"
+      title={initialTab === "branches" ? "Sucursales" : "Vendedores"}
       requiredPermission="organization:read"
     >
-      <OrganizationPage />
+      <OrganizationPage initialTab={initialTab} />
     </AdminShell>
   );
 }

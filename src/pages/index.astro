@@ -1,6 +1,7 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import { AdminShell } from "@/components/layout/AdminShell";
+import { LayoutDashboard, ShieldCheck, Database } from "@lucide/astro";
 ---
 
 <Layout title="Inicio · Arimana Bazar">
@@ -8,32 +9,43 @@ import { AdminShell } from "@/components/layout/AdminShell";
     <section
       class="rounded-2xl border border-border-default bg-surface-card p-6 shadow-card sm:p-9"
     >
-      <p class="text-sm font-bold uppercase tracking-wider text-primary-active">
+      <p
+        class="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-primary-active"
+      >
+        <LayoutDashboard size={18} aria-hidden="true" />
         Panel de Administración
       </p>
       <h1 class="mt-3 text-3xl font-extrabold">Bienvenido a Arimana Bazar</h1>
       <p class="mt-3 max-w-2xl text-text-secondary">
-        Administra la operación comercial desde un espacio de trabajo centralizado.
+        Administra la operación comercial desde un espacio de trabajo
+        centralizado.
       </p>
-      <p class="mt-5 text-sm text-text-secondary">Selecciona una sección en el menú de navegación para continuar.</p>
+      <p class="mt-5 text-sm text-text-secondary">
+        Selecciona una sección en el menú de navegación para continuar.
+      </p>
     </section>
+
     <section class="mt-6 grid gap-4 sm:grid-cols-2">
-      <article class="rounded-xl border border-border-default bg-white p-5">
-        <p class="text-sm font-semibold text-text-secondary">Sesión activa</p><p
-          class="mt-2 font-bold"
+      <article class="rounded-xl border border-border-default bg-white p-5 shadow-card">
+        <p
+          class="flex items-center gap-2 text-sm font-semibold text-text-secondary"
         >
-          Acceso por roles
-        </p><p class="mt-1 text-sm text-text-secondary">
+          <ShieldCheck size={16} aria-hidden="true" />Sesión activa
+        </p>
+        <p class="mt-2 font-bold">Acceso por roles</p>
+        <p class="mt-1 text-sm text-text-secondary">
           Las opciones disponibles dependen de los permisos de tu cuenta.
         </p>
-      </article><article
-        class="rounded-xl border border-border-default bg-white p-5"
-      >
-        <p class="text-sm font-semibold text-text-secondary">
-          Persistencia local
-        </p><p class="mt-2 font-bold">IndexedDB</p><p
-          class="mt-1 text-sm text-text-secondary"
+      </article>
+
+      <article class="rounded-xl border border-border-default bg-white p-5 shadow-card">
+        <p
+          class="flex items-center gap-2 text-sm font-semibold text-text-secondary"
         >
+          <Database size={16} aria-hidden="true" />Persistencia local
+        </p>
+        <p class="mt-2 font-bold">IndexedDB</p>
+        <p class="mt-1 text-sm text-text-secondary">
           Los cambios permanecen en este navegador.
         </p>
       </article>

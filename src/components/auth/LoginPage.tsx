@@ -1,6 +1,7 @@
 import { useState, type SubmitEvent } from "react";
 import { DEMO_LOGIN_PASSWORD, authService } from "@/services/authService";
 import { ActionButton } from "@/components/ui/ActionButton";
+import { KeyRound, LockKeyhole, LogIn, UserRound } from "lucide-react";
 
 const examples = ["admin.arimana", "vendedor.arimana", "analista.arimana"];
 export function LoginPage() {
@@ -67,7 +68,7 @@ export function LoginPage() {
               className="grid gap-1.5 text-sm font-semibold"
               htmlFor="login-username"
             >
-              Usuario
+              <span className="flex items-center gap-2"><UserRound size={15} aria-hidden="true" />Usuario</span>
               <input
                 id="login-username"
                 autoComplete="username"
@@ -81,7 +82,7 @@ export function LoginPage() {
               className="grid gap-1.5 text-sm font-semibold"
               htmlFor="login-password"
             >
-              Contraseña
+              <span className="flex items-center gap-2"><LockKeyhole size={15} aria-hidden="true" />Contraseña</span>
               <input
                 id="login-password"
                 type="password"
@@ -100,12 +101,12 @@ export function LoginPage() {
                 {error}
               </p>
             )}
-            <ActionButton type="submit" disabled={busy}>
+            <ActionButton type="submit" disabled={busy} icon={LogIn}>
               {busy ? "Validando…" : "Ingresar"}
             </ActionButton>
           </form>
           <div className="mt-8 rounded-xl border border-border-default bg-white p-4">
-            <p className="text-sm font-bold">Accesos disponibles</p>
+             <p className="flex items-center gap-2 text-sm font-bold"><KeyRound size={16} aria-hidden="true" />Accesos disponibles</p>
             <p className="mt-1 text-xs text-text-secondary">
               Clave de acceso:{" "}
               <code className="font-bold">{DEMO_LOGIN_PASSWORD}</code>
