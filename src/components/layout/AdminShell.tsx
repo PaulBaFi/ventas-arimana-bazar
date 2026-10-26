@@ -118,6 +118,12 @@ export function AdminShell({
               Acceso y usuarios
             </a>
           )}
+          {hasPermission(user.role, "customers:read") && (
+            <a href="/clientes/" className="block rounded-lg px-4 py-3 text-sm font-semibold text-slate-300 hover:bg-white/10 hover:text-white">Clientes</a>
+          )}
+          {hasPermission(user.role, "catalog:read") && (
+            <a href="/catalogo/" className="block rounded-lg px-4 py-3 text-sm font-semibold text-slate-300 hover:bg-white/10 hover:text-white">Productos y categorías</a>
+          )}
         </nav>
         <div className="border-t border-white/10 p-5">
           <p className="truncate text-sm font-semibold">{user.displayName}</p>

@@ -9,9 +9,11 @@ export const DEMO_DATA: { [K in StoreName]: EntityByStore[K][] } = {
     { ...base("user-analyst"), username: "analista.demo", displayName: "Analista Demo", role: "Analista" },
   ],
   customers: [
-    { ...base("customer-1"), kind: "person", documentType: "DNI", documentNumber: "00000001", name: "Cliente Demostración", email: "cliente@example.test" },
-    { ...base("customer-2"), kind: "company", documentType: "RUC", documentNumber: "20000000001", name: "Empresa Demo SAC" },
+    { ...base("customer-1"), kind: "person", personId: "person-customer-1" },
+    { ...base("customer-2"), kind: "company", companyId: "company-customer-2" },
   ],
+  persons: [{ ...base("person-customer-1"), documentType: "DNI", documentNumber: "00000001", firstName: "Cliente", lastName: "Demostración", email: "cliente@example.test" }],
+  companies: [{ ...base("company-customer-2"), ruc: "20000000001", legalName: "Empresa Demo SAC" }],
   categories: [{ ...base("category-1"), code: "CAT-001", name: "Accesorios", description: "Categoría de demostración" }],
   products: [{ ...base("product-1"), code: "DEM-001", name: "Producto de demostración", categoryId: "category-1", unitPrice: 25 }],
   branches: [{ ...base("branch-1"), code: "SUC-001", name: "Sucursal Demostración", address: "Dirección ficticia" }],

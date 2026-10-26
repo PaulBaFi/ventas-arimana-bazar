@@ -56,4 +56,25 @@ describe("persistencia IndexedDB", () => {
     // Cada operación del repositorio abre su propia conexión y la cierra al terminar.
     expect((await localRepository.get("products", "product-1"))?.name).toBe("Persistente");
   });
+
+  it("migra los clientes del esquema previo a Persona o Empresa enlazada", async () => {
+    await new Promise<void>((resolve, reject) => {
+      const request = indexedDB.open("arimana-bazar-demo", 1);
+      request.onupgradeneeded = () => {
+        const db = request.result;
+        const customers = db.createObjectStore("customers", { keyPath: "id" });
+        customers.add({ id: "legacy-person", kind: "person", documentType: "DNI", documentNumber: "12345678", name: "Cliente Migrado", email: "migrado@example.test", createdAt: "2025-01-01", updatedAt: "2025-01-01", status: "active", demo: true });
+        customers.add({ id: "legacy-company", kind: "company", documentType: "RUC", documentNumber: "20123456789", name: "Empresa Migrada SAC", createdAt: "2025-01-01", updatedAt: "2025-01-01", status: "active", demo: true });
+      };
+      request.onsuccess = () => { request.result.close(); resolve(); };
+      request.onerror = () => reject(request.error);
+    });
+    await localRepository.seedDemoData();
+    const personCustomer = await localRepository.get("customers", "legacy-person");
+    const companyCustomer = await localRepository.get("customers", "legacy-company");
+    expect(personCustomer?.personId).toBe("person-legacy-person"); expect(personCustomer?.companyId).toBeUndefined();
+    expect((await localRepository.get("persons", "person-legacy-person"))?.firstName).toBe("Cliente");
+    expect(companyCustomer?.companyId).toBe("company-legacy-company"); expect(companyCustomer?.personId).toBeUndefined();
+    expect((await localRepository.get("companies", "company-legacy-company"))?.legalName).toBe("Empresa Migrada SAC");
+  });
 });

@@ -18,13 +18,13 @@ export interface User extends BaseEntity {
   email?: string;
 }
 
+export interface Person extends BaseEntity { documentType: "DNI" | "CE"; documentNumber: string; firstName: string; lastName: string; email?: string; phone?: string }
+export interface Company extends BaseEntity { ruc: string; legalName: string; tradeName?: string; email?: string; phone?: string }
 export interface Customer extends BaseEntity {
   kind: "person" | "company";
-  documentType: "DNI" | "RUC" | "CE";
-  documentNumber: string;
-  name: string;
-  email?: string;
-  phone?: string;
+  /** XOR: kind=person implica personId y ausencia de companyId, y viceversa. */
+  personId?: string;
+  companyId?: string;
 }
 
 export interface Category extends BaseEntity { code: string; name: string; description?: string }
@@ -53,13 +53,13 @@ export interface EtlConnection extends BaseEntity {
   /** Nunca se persiste una contraseña auténtica. En demostración solo se guarda un marcador ficticio. */
   credentialConfigured: boolean;
 }
-export type StoreName = "users" | "customers" | "categories" | "products" | "branches" | "sellers" | "paymentMethods" | "sales" | "receipts" | "departments" | "provinces" | "districts" | "etlConnections" | "etlExecutions" | "auditLogs" | "consolidatedRows";
+export type StoreName = "users" | "customers" | "persons" | "companies" | "categories" | "products" | "branches" | "sellers" | "paymentMethods" | "sales" | "receipts" | "departments" | "provinces" | "districts" | "etlConnections" | "etlExecutions" | "auditLogs" | "consolidatedRows";
 export interface AuditLog extends BaseEntity { actorId: string; action: string; target: string; result: "success" | "error"; message: string }
 export interface EtlExecution extends BaseEntity { sourceNames: EtlSourceName[]; state: "pending" | "running" | "completed" | "error"; startedAt: string; durationSeconds: number; log: string[]; extracted: number; transformed: number; loaded: number; rejected: number }
 export interface ConsolidatedRow extends BaseEntity { source: EtlSourceName; sourceKey: string; dimension: string; amount: number; date: string }
 
 export type EntityByStore = {
-  users: User; customers: Customer; categories: Category; products: Product; branches: Branch;
+  users: User; customers: Customer; persons: Person; companies: Company; categories: Category; products: Product; branches: Branch;
   sellers: Seller; paymentMethods: PaymentMethod; sales: Sale; receipts: Receipt;
   departments: Department; provinces: Province; districts: District; etlConnections: EtlConnection;
   etlExecutions: EtlExecution; auditLogs: AuditLog; consolidatedRows: ConsolidatedRow;
