@@ -71,7 +71,7 @@ export function UsersPage() {
   return <div className="space-y-6">
     <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end"><div><p className="text-sm font-semibold text-primary-active">Administración</p><h1 className="mt-1 text-2xl font-extrabold sm:text-3xl">Acceso y usuarios</h1><p className="mt-2 text-sm text-text-secondary">Gestiona cuentas y roles. Las desactivaciones preservan la trazabilidad.</p></div><ActionButton onClick={openCreate}><span aria-hidden="true" className="mr-2">＋</span>Crear usuario</ActionButton></div>
     <div className="flex flex-col gap-3 rounded-xl border border-border-default bg-white p-4 sm:flex-row sm:items-end">
-      <label className="grid flex-1 gap-1.5 text-xs font-bold text-text-secondary">Buscar usuario, nombre o correo<input type="search" value={search} onChange={event => setSearch(event.target.value)} placeholder="Ej. vendedor.demo" className="min-h-10 rounded-lg border border-border-default px-3 text-sm font-normal text-text-primary outline-none focus:border-border-primary" /></label>
+      <label className="grid flex-1 gap-1.5 text-xs font-bold text-text-secondary">Buscar usuario, nombre o correo<input type="search" value={search} onChange={event => setSearch(event.target.value)} placeholder="Ej. vendedor.arimana" className="min-h-10 rounded-lg border border-border-default px-3 text-sm font-normal text-text-primary outline-none focus:border-border-primary" /></label>
       <label className="grid gap-1.5 text-xs font-bold text-text-secondary">Estado<select value={statusFilter} onChange={event => setStatusFilter(event.target.value as typeof statusFilter)} className="min-h-10 rounded-lg border border-border-default bg-white px-3 text-sm font-normal text-text-primary"><option value="all">Todos</option><option value="active">Activos</option><option value="inactive">Inactivos</option></select></label>
     </div>
     {message && <div role="status" className={`flex items-start justify-between gap-4 rounded-lg p-3 text-sm ${message.kind === "success" ? "bg-success-subtle text-success" : "bg-danger-subtle text-danger"}`}><p>{message.text}</p><button type="button" aria-label="Cerrar mensaje" onClick={() => setMessage(null)} className="font-bold">×</button></div>}
@@ -88,7 +88,7 @@ export function UsersPage() {
           <FormField label="Rol y permisos" name="role" required error={errors.role}>
             <select id="role" name="role" required value={draft.role} onChange={event => setDraft({ ...draft, role: event.target.value as UserRole })} className="min-h-10 rounded-lg border border-border-default bg-white px-3 text-sm outline-none focus:border-border-primary">{ROLES.map(role => <option key={role}>{role}</option>)}</select>
           </FormField>
-          <p className="self-end pb-2 text-xs text-text-secondary sm:col-span-2">La contraseña no forma parte del registro simulado. El acceso se realiza con cuentas y credenciales exclusivamente de demostración.</p>
+          <p className="self-end pb-2 text-xs text-text-secondary sm:col-span-2">La contraseña se administra de forma independiente a los datos del usuario.</p>
           <div className="flex justify-end gap-3 pt-2 sm:col-span-2"><ActionButton type="button" variant="secondary" onClick={() => setFormOpen(false)}>Cancelar</ActionButton><ActionButton type="submit" disabled={busy}>{busy ? "Guardando…" : editing ? "Guardar cambios" : "Crear usuario"}</ActionButton></div>
         </form>
       </section>

@@ -44,3 +44,23 @@ export function validateUser(input: UserInput): ValidationErrors<"username" | "d
   if (input.email && !validEmail(input.email)) errors.email = "Ingresa un correo válido.";
   return errors;
 }
+
+export interface BranchInput { code: string; name: string; address?: string; phone?: string }
+export interface SellerInput {
+  documentType: "DNI" | "CE"; documentNumber: string; name: string; branchId: string;
+  email?: string; phone?: string; userId?: string;
+}
+export function validateBranch(input: BranchInput): ValidationErrors<"code" | "name"> {
+  const errors: ValidationErrors<"code" | "name"> = {};
+  if (required(input.code, "Código")) errors.code = "El código de sucursal es obligatorio.";
+  if (required(input.name, "Nombre")) errors.name = "El nombre de sucursal es obligatorio.";
+  return errors;
+}
+export function validateSeller(input: SellerInput): ValidationErrors<"documentNumber" | "name" | "branchId" | "email"> {
+  const errors: ValidationErrors<"documentNumber" | "name" | "branchId" | "email"> = {};
+  if (!validDocument(input.documentType, input.documentNumber)) errors.documentNumber = "El documento no tiene un formato válido.";
+  if (required(input.name, "Nombre")) errors.name = "El nombre del vendedor es obligatorio.";
+  if (required(input.branchId, "Sucursal")) errors.branchId = "Selecciona una sucursal.";
+  if (input.email && !validEmail(input.email)) errors.email = "Ingresa un correo válido.";
+  return errors;
+}

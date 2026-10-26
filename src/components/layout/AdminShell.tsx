@@ -100,7 +100,7 @@ export function AdminShell({
           </div>
           <div>
             <p className="text-sm font-bold">Arimana Bazar</p>
-            <p className="text-xs text-slate-400">Gestión de ventas · Demo</p>
+            <p className="text-xs text-slate-400">Sistema de Gestión de Ventas</p>
           </div>
         </div>
         <nav className="flex-1 space-y-1 p-4" aria-label="Navegación principal">
@@ -123,6 +123,9 @@ export function AdminShell({
           )}
           {hasPermission(user.role, "catalog:read") && (
             <a href="/catalogo/" className="block rounded-lg px-4 py-3 text-sm font-semibold text-slate-300 hover:bg-white/10 hover:text-white">Productos y categorías</a>
+          )}
+          {hasPermission(user.role, "organization:read") && (
+            <a href="/vendedores-sucursales/" className="block rounded-lg px-4 py-3 text-sm font-semibold text-slate-300 hover:bg-white/10 hover:text-white">Vendedores y sucursales</a>
           )}
         </nav>
         <div className="border-t border-white/10 p-5">

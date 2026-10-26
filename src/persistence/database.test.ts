@@ -77,4 +77,19 @@ describe("persistencia IndexedDB", () => {
     expect(companyCustomer?.companyId).toBe("company-legacy-company"); expect(companyCustomer?.personId).toBeUndefined();
     expect((await localRepository.get("companies", "company-legacy-company"))?.legalName).toBe("Empresa Migrada SAC");
   });
+
+  it("actualiza cuentas iniciales y vendedores al abrir el esquema anterior", async () => {
+    await new Promise<void>((resolve, reject) => {
+      const request = indexedDB.open("arimana-bazar-demo", 2);
+      request.onupgradeneeded = () => {
+        const db = request.result;
+        db.createObjectStore("users", { keyPath: "id" }).add({ id: "user-admin", username: "admin.demo", displayName: "Administración Demo", role: "Administrador", createdAt: "2025-01-01", updatedAt: "2025-01-01", status: "active", demo: true });
+        db.createObjectStore("sellers", { keyPath: "id" }).add({ id: "seller-1", documentNumber: "00000002", name: "Vendedora Demo", branchId: "branch-1", userId: "user-seller", createdAt: "2025-01-01", updatedAt: "2025-01-01", status: "active", demo: true });
+      };
+      request.onsuccess = () => { request.result.close(); resolve(); };
+      request.onerror = () => reject(request.error);
+    });
+    expect((await localRepository.get("users", "user-admin"))?.username).toBe("admin.arimana");
+    expect((await localRepository.get("sellers", "seller-1"))?.documentType).toBe("DNI");
+  });
 });

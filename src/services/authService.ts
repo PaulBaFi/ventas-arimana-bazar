@@ -16,7 +16,7 @@ export const authService = {
   async signIn(username: string, password: string): Promise<User> {
     await localRepository.seedDemoData();
     const normalized = username.trim().toLocaleLowerCase("es");
-    if (password !== DEMO_PASSWORD) throw new Error("Usuario o contraseña de demostración incorrectos.");
+    if (password !== DEMO_PASSWORD) throw new Error("El usuario o la contraseña no son correctos.");
     const user = (await localRepository.list("users")).find(item => item.username.toLocaleLowerCase("es") === normalized);
     if (!user || user.status !== "active") throw new Error("La cuenta no existe o está desactivada.");
     window.localStorage.setItem(SESSION_KEY, JSON.stringify({ userId: user.id, startedAt: new Date().toISOString() } satisfies Session));

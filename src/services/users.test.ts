@@ -31,9 +31,9 @@ describe("acceso y mantenimiento de usuarios", () => {
     expect(validateUser({ username: "nuevo.usuario", displayName: "Nombre", role: "Analista", email: "n@ejemplo.test" })).toEqual({});
   });
 
-  it("simula login y logout sin persistir la contraseña", async () => {
-    await expect(authService.signIn("admin.demo", "incorrecta")).rejects.toThrow(/incorrectos/);
-    const user = await authService.signIn("admin.demo", DEMO_LOGIN_PASSWORD);
+  it("valida el acceso y el cierre de sesión sin persistir la contraseña", async () => {
+    await expect(authService.signIn("admin.arimana", "incorrecta")).rejects.toThrow(/correctos/);
+    const user = await authService.signIn("admin.arimana", DEMO_LOGIN_PASSWORD);
     expect(user.role).toBe("Administrador");
     expect(await authService.currentUser()).toMatchObject({ id: "user-admin" });
     expect([...storage.values()].join(" ")).not.toContain(DEMO_LOGIN_PASSWORD);
@@ -55,7 +55,7 @@ describe("acceso y mantenimiento de usuarios", () => {
 
   it("rechaza duplicados, datos inválidos, self-deactivation y operaciones de roles no autorizados", async () => {
     await localRepository.seedDemoData();
-    await expect(userService.save("Administrador", { username: "admin.demo", displayName: "Duplicado", role: "Vendedor" })).rejects.toThrow(/Ya existe/);
+    await expect(userService.save("Administrador", { username: "admin.arimana", displayName: "Duplicado", role: "Vendedor" })).rejects.toThrow(/Ya existe/);
     await expect(userService.save("Administrador", { username: "x", displayName: "Inválido", role: "Vendedor" })).rejects.toThrow(/caracteres/);
     await expect(userService.list("Vendedor")).rejects.toThrow(/permiso/);
     await expect(userService.save("Vendedor" as UserRole, { username: "bloqueado", displayName: "Bloqueado", role: "Vendedor" })).rejects.toThrow(/permiso/);
@@ -65,6 +65,6 @@ describe("acceso y mantenimiento de usuarios", () => {
   it("impide el inicio de sesión de una cuenta desactivada", async () => {
     await localRepository.seedDemoData();
     await userService.deactivate("Administrador", "user-admin", "user-seller");
-    await expect(authService.signIn("admin.demo", DEMO_LOGIN_PASSWORD)).rejects.toThrow(/desactivada/);
+    await expect(authService.signIn("admin.arimana", DEMO_LOGIN_PASSWORD)).rejects.toThrow(/desactivada/);
   });
 });

@@ -1,10 +1,10 @@
 import type { UserRole } from "./models";
 
-export type Permission = "users:manage" | "customers:read" | "customers:write" | "catalog:read" | "catalog:write" | "sales:write" | "organization:write" | "etl:admin" | "analytics:read";
+export type Permission = "users:manage" | "customers:read" | "customers:write" | "catalog:read" | "catalog:write" | "sales:write" | "organization:read" | "organization:write" | "etl:admin" | "analytics:read";
 const grants: Record<UserRole, Permission[]> = {
-  Administrador: ["users:manage", "customers:read", "customers:write", "catalog:read", "catalog:write", "sales:write", "organization:write", "etl:admin", "analytics:read"],
-  Vendedor: ["customers:read", "customers:write", "catalog:read", "sales:write"],
-  Cajero: ["customers:read", "catalog:read", "sales:write"],
+  Administrador: ["users:manage", "customers:read", "customers:write", "catalog:read", "catalog:write", "sales:write", "organization:read", "organization:write", "etl:admin", "analytics:read"],
+  Vendedor: ["customers:read", "customers:write", "catalog:read", "organization:read", "sales:write"],
+  Cajero: ["customers:read", "catalog:read", "organization:read", "sales:write"],
   Gerencia: ["analytics:read"],
   Analista: ["analytics:read"],
 };

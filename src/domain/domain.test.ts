@@ -24,6 +24,6 @@ describe("validaciones", () => {
     expect(validateCustomer({ kind: "person", documentType: "CE", documentNumber: "ABC12345", firstName: "", lastName: "", email: "no-es-correo" })).toMatchObject({ firstName: expect.any(String), lastName: expect.any(String), email: expect.any(String) });
     expect(validateCustomer({ kind: "person", documentType: "CE", documentNumber: "ABC12345", firstName: "Una", lastName: "Persona", email: "a@b.test" })).toEqual({});
     expect(validateSaleLines([{ id: "1", productId: "", productName: "", quantity: 0, unitPrice: -1, subtotal: 0 }])).toHaveLength(3);
-    expect(validateSaleLines([{ id: "1", productId: "p1", productName: "Demo", quantity: 1, unitPrice: 0, subtotal: 0 }])).toEqual([]);
+    expect(validateSaleLines([{ id: "1", productId: "p1", productName: "Producto", quantity: 1, unitPrice: 0, subtotal: 0 }])).toEqual([]);
   });
 });

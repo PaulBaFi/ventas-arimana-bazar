@@ -29,8 +29,8 @@ export interface Customer extends BaseEntity {
 
 export interface Category extends BaseEntity { code: string; name: string; description?: string }
 export interface Product extends BaseEntity { code: string; name: string; categoryId: string; description?: string; unitPrice: number }
-export interface Branch extends BaseEntity { code: string; name: string; address?: string }
-export interface Seller extends BaseEntity { documentNumber: string; name: string; branchId: string; userId?: string }
+export interface Branch extends BaseEntity { code: string; name: string; address?: string; phone?: string }
+export interface Seller extends BaseEntity { documentType: "DNI" | "CE"; documentNumber: string; name: string; branchId: string; email?: string; phone?: string; userId?: string }
 export interface PaymentMethod extends BaseEntity { name: string; description?: string }
 export interface SaleLine { id: string; productId: string; productName: string; quantity: number; unitPrice: number; subtotal: number }
 export interface Sale extends BaseEntity {

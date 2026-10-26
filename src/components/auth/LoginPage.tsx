@@ -2,7 +2,7 @@ import { useState, type SubmitEvent } from "react";
 import { DEMO_LOGIN_PASSWORD, authService } from "@/services/authService";
 import { ActionButton } from "@/components/ui/ActionButton";
 
-const examples = ["admin.demo", "vendedor.demo", "analista.demo"];
+const examples = ["admin.arimana", "vendedor.arimana", "analista.arimana"];
 export function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -38,10 +38,10 @@ export function LoginPage() {
             Gestión comercial
           </p>
           <h1 className="text-5xl font-extrabold leading-tight">
-            Control claro para cada operación.
+            Portal de gestión de ventas empresarial
           </h1>
           <p className="mt-5 text-lg text-slate-300">
-            Accede a la maqueta de demostración del sistema de ventas.
+            Ingresa tus credenciales para acceder a la plataforma comercial
           </p>
         </div>
         <div className="pointer-events-none absolute -bottom-36 -right-20 size-96 rounded-full border-48 border-white/5" />
@@ -52,7 +52,7 @@ export function LoginPage() {
           <div className="mb-8 lg:hidden">
             <p className="font-bold">Arimana Bazar</p>
             <p className="text-sm text-text-secondary">
-              Sistema de demostración
+              Sistema de Gestión de Ventas
             </p>
           </div>
           <p className="text-sm font-bold uppercase tracking-wider text-primary-active">
@@ -60,7 +60,7 @@ export function LoginPage() {
           </p>
           <h2 className="mt-2 text-3xl font-extrabold">Iniciar sesión</h2>
           <p className="mt-2 text-text-secondary">
-            Usa una cuenta ficticia para entrar al entorno local.
+            Ingresa con las credenciales autorizadas por la administración.
           </p>
           <form className="mt-8 grid gap-5" onSubmit={submit}>
             <label
@@ -81,7 +81,7 @@ export function LoginPage() {
               className="grid gap-1.5 text-sm font-semibold"
               htmlFor="login-password"
             >
-              Contraseña demo
+              Contraseña
               <input
                 id="login-password"
                 type="password"
@@ -105,9 +105,9 @@ export function LoginPage() {
             </ActionButton>
           </form>
           <div className="mt-8 rounded-xl border border-border-default bg-white p-4">
-            <p className="text-sm font-bold">Cuentas de demostración</p>
+            <p className="text-sm font-bold">Accesos disponibles</p>
             <p className="mt-1 text-xs text-text-secondary">
-              Contraseña común:{" "}
+              Clave de acceso:{" "}
               <code className="font-bold">{DEMO_LOGIN_PASSWORD}</code>
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
@@ -127,8 +127,7 @@ export function LoginPage() {
             </div>
           </div>
           <p className="mt-5 text-center text-xs text-text-muted">
-            Las credenciales son ficticias, solo válidas para esta maqueta y no
-            se almacenan.
+            El acceso y la administración de cuentas están sujetos a los permisos asignados.
           </p>
         </div>
       </section>
