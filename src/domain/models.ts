@@ -32,13 +32,13 @@ export interface Product extends BaseEntity { code: string; name: string; catego
 export interface Branch extends BaseEntity { code: string; name: string; address?: string; phone?: string }
 export interface Seller extends BaseEntity { documentType: "DNI" | "CE"; documentNumber: string; name: string; branchId: string; email?: string; phone?: string; userId?: string }
 export interface PaymentMethod extends BaseEntity { name: string; description?: string }
-export interface SaleLine { id: string; productId: string; productName: string; quantity: number; unitPrice: number; subtotal: number }
+export interface SaleLine { id: string; productId: string; productCode?: string; productName: string; quantity: number; unitPrice: number; subtotal: number }
 export interface Sale extends BaseEntity {
   saleNumber: string; customerId: string; sellerId: string; branchId: string; lines: SaleLine[];
   subtotal: number; total: number; state: "draft" | "confirmed" | "voided"; saleDate: string;
-  paymentMethodId?: string; departmentId?: string; provinceId?: string; districtId?: string;
+  paymentMethodId?: string; departmentId?: string; provinceId?: string; districtId?: string; receiptId?: string; createdBy?: string;
 }
-export interface Receipt extends BaseEntity { saleId: string; type: "Boleta" | "Factura"; series: string; number: string; state: "draft" | "issued" | "voided" }
+export interface Receipt extends BaseEntity { saleId: string; type: "Boleta" | "Factura"; series: string; number: string; state: "draft" | "issued" | "voided"; issuedAt?: string; voidedAt?: string }
 export interface Department extends BaseEntity { code: string; name: string }
 export interface Province extends BaseEntity { code: string; name: string; departmentId: string }
 export interface District extends BaseEntity { code: string; name: string; provinceId: string }

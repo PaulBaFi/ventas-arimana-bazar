@@ -1,5 +1,4 @@
-import type { SaleLine } from "./models";
-import type { UserRole } from "./models";
+import type { SaleLine, UserRole } from "./models";
 
 export type ValidationErrors<T extends string = string> = Partial<Record<T, string>>;
 export const required = (value: unknown, label: string): string | undefined => String(value ?? "").trim() ? undefined : `${label} es obligatorio.`;
@@ -63,4 +62,26 @@ export function validateSeller(input: SellerInput): ValidationErrors<"documentNu
   if (required(input.branchId, "Sucursal")) errors.branchId = "Selecciona una sucursal.";
   if (input.email && !validEmail(input.email)) errors.email = "Ingresa un correo válido.";
   return errors;
+}
+
+export interface SaleLineInput { productId: string; quantity: number }
+export interface SaleDraftInput {
+  customerId: string; sellerId: string; branchId: string; saleDate: string; lines: SaleLineInput[];
+  paymentMethodId?: string; receiptType?: "Boleta" | "Factura"; departmentId?: string; provinceId?: string; districtId?: string;
+}
+export function validateSaleDraft(input: SaleDraftInput): ValidationErrors<"customerId" | "sellerId" | "branchId" | "saleDate" | "lines"> {
+  const errors: ValidationErrors<"customerId" | "sellerId" | "branchId" | "saleDate" | "lines"> = {};
+  if (required(input.customerId, "Cliente")) errors.customerId = "Selecciona un cliente.";
+  if (required(input.sellerId, "Vendedor")) errors.sellerId = "Selecciona un vendedor.";
+  if (required(input.branchId, "Sucursal")) errors.branchId = "Selecciona una sucursal.";
+  if (!input.saleDate || Number.isNaN(new Date(input.saleDate).getTime())) errors.saleDate = "Ingresa una fecha válida.";
+  if (!input.lines.length || input.lines.some(line => !line.productId || !Number.isInteger(line.quantity) || line.quantity <= 0)) errors.lines = "Agrega al menos un producto con cantidad entera mayor que cero.";
+  return errors;
+}
+export function validateReceiptFields(type: "Boleta" | "Factura", series: string): string | undefined {
+  const expected = type === "Boleta" ? "B" : "F";
+  if (!new RegExp(`^${expected}\\d{3}$`).test(series.trim().toUpperCase())) return `La serie de ${type.toLocaleLowerCase("es")} debe iniciar con ${expected} y tener tres dígitos.`;
+}
+export function validatePaymentMethod(name: string): string | undefined {
+  return required(name, "El nombre del medio de pago");
 }

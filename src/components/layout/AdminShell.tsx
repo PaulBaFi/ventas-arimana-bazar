@@ -127,6 +127,9 @@ export function AdminShell({
           {hasPermission(user.role, "organization:read") && (
             <a href="/vendedores-sucursales/" className="block rounded-lg px-4 py-3 text-sm font-semibold text-slate-300 hover:bg-white/10 hover:text-white">Vendedores y sucursales</a>
           )}
+          {hasPermission(user.role, "sales:read") && (
+            <a href="/ventas/" className="block rounded-lg px-4 py-3 text-sm font-semibold text-slate-300 hover:bg-white/10 hover:text-white">Ventas y comprobantes</a>
+          )}
         </nav>
         <div className="border-t border-white/10 p-5">
           <p className="truncate text-sm font-semibold">{user.displayName}</p>

@@ -1,5 +1,5 @@
 import { DEMO_DATA } from "@/data/demo";
-import type { Company, Customer, EntityByStore, Person, StoreName } from "@/domain/models";
+import type { AuditLog, Company, Customer, EntityByStore, Person, Receipt, Sale, StoreName } from "@/domain/models";
 
 const DB_NAME = "arimana-bazar-demo";
 const DB_VERSION = 3;
@@ -151,6 +151,86 @@ export const localRepository = {
         tx.oncomplete = () => resolve();
         tx.onerror = () => reject(tx.error ?? new Error("No se pudo desactivar la sucursal y sus vendedores."));
         tx.onabort = () => reject(tx.error ?? new Error("Desactivación de sucursal cancelada."));
+      });
+    } finally { db.close(); }
+  },
+  /** Persist sale header, line snapshots, receipt and audit trail in one IndexedDB transaction. */
+  async saveSaleAggregate(sale: Sale, receipt: Receipt | null, audit: AuditLog): Promise<{ sale: Sale; receipt: Receipt | null }> {
+    const db = await openDatabase();
+    try {
+      const tx = db.transaction(["sales", "receipts", "auditLogs"], "readwrite");
+      const salesStore = tx.objectStore("sales");
+      const receiptsStore = tx.objectStore("receipts");
+      const auditStore = tx.objectStore("auditLogs");
+      const salesRequest = salesStore.getAll();
+      const receiptsRequest = receiptsStore.getAll();
+      let salesReady = false;
+      let receiptsReady = false;
+      let savedSale = sale;
+      let savedReceipt = receipt;
+      let commitError: unknown;
+      const apply = () => {
+        if (!salesReady || !receiptsReady) return;
+        try {
+          const sales = salesRequest.result as Sale[];
+          const receipts = receiptsRequest.result as Receipt[];
+          const previousSale = sales.find(item => item.id === sale.id);
+          if (!previousSale) {
+            const maxSaleNumber = sales.reduce((max, item) => Math.max(max, Number(item.saleNumber.match(/^V-(\d+)$/)?.[1] ?? 0)), 0);
+            savedSale = { ...sale, saleNumber: `V-${String(maxSaleNumber + 1).padStart(6, "0")}` };
+          }
+          if (receipt) {
+            const previousReceipt = receipts.find(item => item.id === receipt.id);
+            const canKeepNumber = previousReceipt && previousReceipt.type === receipt.type && previousReceipt.series === receipt.series && !!previousReceipt.number;
+            const maxReceiptNumber = receipts.filter(item => item.type === receipt.type && item.series === receipt.series)
+              .reduce((max, item) => Math.max(max, Number(item.number) || 0), 0);
+            const number = canKeepNumber ? previousReceipt.number : receipt.state === "issued" ? String(maxReceiptNumber + 1).padStart(6, "0") : "";
+            savedReceipt = { ...receipt, number };
+            savedSale = { ...savedSale, receiptId: savedReceipt.id };
+            receiptsStore.put(savedReceipt);
+          }
+          salesStore.put(savedSale);
+          auditStore.put(audit);
+        } catch (error) {
+          commitError = error;
+          tx.abort();
+        }
+      };
+      salesRequest.onsuccess = () => { salesReady = true; apply(); };
+      receiptsRequest.onsuccess = () => { receiptsReady = true; apply(); };
+      await new Promise<void>((resolve, reject) => {
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(commitError ?? tx.error ?? new Error("No se pudo guardar la operación y su auditoría."));
+        tx.onabort = () => reject(commitError ?? tx.error ?? new Error("La operación fue cancelada."));
+      });
+      return { sale: savedSale, receipt: savedReceipt };
+    } finally { db.close(); }
+  },
+  async removeDraftReceiptAggregate(sale: Sale, receiptId: string, audit: AuditLog): Promise<void> {
+    const db = await openDatabase();
+    try {
+      const tx = db.transaction(["sales", "receipts", "auditLogs"], "readwrite");
+      tx.objectStore("sales").put({ ...sale, receiptId: undefined, updatedAt: new Date().toISOString() });
+      tx.objectStore("receipts").delete(receiptId);
+      tx.objectStore("auditLogs").put(audit);
+      await new Promise<void>((resolve, reject) => {
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error ?? new Error("No se pudo eliminar el comprobante borrador."));
+        tx.onabort = () => reject(tx.error ?? new Error("La operación fue cancelada."));
+      });
+    } finally { db.close(); }
+  },
+  async removeDraftSaleAggregate(sale: Sale, audit: AuditLog): Promise<void> {
+    const db = await openDatabase();
+    try {
+      const tx = db.transaction(["sales", "receipts", "auditLogs"], "readwrite");
+      tx.objectStore("sales").delete(sale.id);
+      if (sale.receiptId) tx.objectStore("receipts").delete(sale.receiptId);
+      tx.objectStore("auditLogs").put(audit);
+      await new Promise<void>((resolve, reject) => {
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error ?? new Error("No se pudo eliminar el borrador."));
+        tx.onabort = () => reject(tx.error ?? new Error("La operación fue cancelada."));
       });
     } finally { db.close(); }
   },
